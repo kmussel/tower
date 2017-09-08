@@ -7,6 +7,7 @@ defmodule Tower.Mixfile do
       version: "0.1.0",
       elixir: "~> 1.5",
       package: package(),
+      build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
       deps: deps()
     ]
@@ -18,17 +19,25 @@ defmodule Tower.Mixfile do
       extra_applications: [
         :logger,
         :cowboy,
+        :postgrex,
+        :ecto,
         :plug,
-      ]
+        :comeonin,
+        :secure_random
+      ],
+      mod: {Tower, []},
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:cowboy, "~> 1.1"},
-      {:plug,   "~> 1.3"},
-      {:poison, "~> 3.1"}
+      {:postgrex, "0.13.3"},
+      {:ecto, "2.2.1"},
+      {:cowboy, "1.1.2"},
+      {:plug,   "1.4.3"},
+      {:poison, "3.1.0"},
+      {:comeonin, "3.2.0"}
     ]
   end
 
