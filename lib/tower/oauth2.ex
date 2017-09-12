@@ -1,15 +1,10 @@
-defmodule Tower.Oauth2 do
+defmodule Tower.OAuth2 do
     @moduledoc """
     Authorize resource
     """  
 
+    @grant_types Application.get_env(:tower, :grant_types)
     def authorize(params) do
-    end
-
-    def resource_owner_from_credentials(conn) do
-      case Application.get_env(:tower, :resource_owner_from_credentials) do
-        nil -> nil
-        ro -> ro.(conn)
-      end
+      @grant_types[String.to_atom(params["grant_type"])].authorize(params)
     end
   end
