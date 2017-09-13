@@ -11,6 +11,7 @@ defmodule Tower do
     import Supervisor.Spec
 
     children = [
+      supervisor(Tower.Repo, [])
     ]
 
     opts = [strategy: :one_for_one, name: Tower.Supervisor]

@@ -37,7 +37,8 @@ defmodule Tower.Mixfile do
       {:cowboy, "1.1.2"},
       {:plug,   "1.4.3"},
       {:poison, "3.1.0"},
-      {:comeonin, "3.2.0"}
+      {:comeonin, "3.2.0"},
+      {:secure_random, "0.5.1"}
     ]
   end
 

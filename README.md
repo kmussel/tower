@@ -41,3 +41,53 @@ use Tower.Routes, access_token: "oauth/token", applications: "oauth_app"
 ```
 use Tower.Routes, controllers: [access_token: V1.Controllers.AccessToken, applications: V1.Controllers.Applications]
 ```
+
+## Authenticating
+
+**Resource Owner Password Credentials Flow**
+By default the route will authorize the resource owner using:
+```
+Tower.OAuth.authorize(%{"email" => email, "password" => password, "client_id" => client_id, "grant_type" => "password", "scopes" => scopes})
+```
+Where the params:  
+email      -> mandatory  
+password   -> mandatory  
+client_id  -> mandatory  
+grant_type -> mandatory  
+scopes     -> optional  
+
+
+
+## Configuration
+
+**Add your database configuration to the config file.**
+```
+config :tower, Tower.Repo,
+  adapter: Ecto.Adapters.Postgres,
+  username: "",
+  password: "",
+  database: "db",
+  hostname: "localhost",
+  pool_size: 10
+```
+
+**Set the Config Variables:**
+
+```
+config :tower, 
+  ecto_repos: [Tower.Repo],
+  repo: Tower.Repo,
+  resource_owner: Application.Model.User,
+  resource_owner_from_credentials: fn(params) ->    
+    Tower.GrantType.Password.resource_owner_from_email_password(params)    
+  end,
+  grant_types: %{
+    password: Tower.GrantType.Password
+  }
+```  
+
+By default the resource owner is authenticated and retrieved using:
+``` Tower.GrantType.Password.resource_owner_from_email_password(params)  ```
+where params is %{email: email, password: password}
+
+You can configure how the resource owner is retrieved by setting the resource_owner_from_credentials function within the config as shown above.  
