@@ -40,6 +40,11 @@ defmodule Tower.Models.AccessToken do
     |> change(params)
   end
 
+  def revoke(token) do 
+    token
+    |> Tower.Models.AccessToken.changeset(%{revoked_at: DateTime.utc_now})
+    |> Tower.Repo.update()
+  end
 
   def is_expired?(token) do
     (DateTime.to_unix(token.inserted_at) + token.expires_in) < :os.system_time(:seconds)

@@ -2,7 +2,8 @@ defmodule Tower.Token do
   import Plug.Conn
 
   alias Tower.Models.AccessToken
-  
+  alias Tower.Helpers.AccessToken, as: AccessTokenHelper
+
   @repo Application.get_env(:tower, :repo)
   @access_token_methods Application.get_env(:tower, :access_token_methods, [:from_bearer_authorization])
 
@@ -10,30 +11,51 @@ defmodule Tower.Token do
   def authenticate(conn, scopes) do
     conn
     |> retrieve_token()
-    |> validate_token(scopes)    
+    |> AccessTokenHelper.validate_token(scopes)
   end
 
-  def validate_token(nil, _), do: {:error, "Access Token is invalid"}
-  def validate_token(token, scopes) do
-    case is_valid(token, scopes) do 
-      false -> {:error, "Access Token is invalid"}
-      true ->  {:ok, token}
+  def revoke(nil, _), do: {:error, "Invalid Token"}
+  def revoke(token, client_uid) do
+    client = @repo.get_by(Tower.Models.OAuthApplication, uid: client_uid)
+    {:ok, token}
+    |> AccessTokenHelper.validate_client(client)
+    |> revoke_token()
+  end  
+  def revoke(nil), do: {:error, "Invalid Token"}
+  def revoke(token) do
+    revoke_token({:ok, token})
+  end
+
+  def revoke_token({:ok, token}) do
+    case is_nil(token.revoked_at) do
+      false -> {:ok, token}
+      true -> Tower.Models.AccessToken.revoke(token)
+    end
+  end
+  def revoke_token({:error, _} = res), do: res
+
+  def fetch_revoke_token(conn) do
+    case conn.params["token_type_hint"] do
+      "refresh_token" -> fetch_token_by(conn, "refresh_token") || fetch_token_by(conn, "access_token")
+      _ ->  fetch_token_by(conn, "access_token") || fetch_token_by(conn, "refresh_token")
     end
   end
 
-  def is_valid(nil, _), do: false 
-  def is_valid(token, scopes) do 
-    !AccessToken.is_expired?(token) && is_nil(token.revoked_at) && AccessToken.has_scopes(token, scopes)
+  defp fetch_token_by(conn, "refresh_token") do
+    @repo.get_by(Tower.Models.AccessToken, refresh_token: conn.params["token"])
+  end
+  defp fetch_token_by(conn, _) do
+    @repo.get_by(Tower.Models.AccessToken, token: conn.params["token"])
   end
 
-  def retrieve_token(conn, index \\ 0)
-  def retrieve_token(conn, index) when index < length(@access_token_methods)  do
+  defp retrieve_token(conn, index \\ 0)
+  defp retrieve_token(conn, index) when index < length(@access_token_methods)  do
     case token_from_method(conn, index) do
       nil -> retrieve_token(conn, index+1)
       token -> @repo.get_by(Tower.Models.AccessToken, token: token) |> @repo.preload(:resource_owner)
     end
   end
-  def retrieve_token(_, index) when index >= length(@access_token_methods)  do
+  defp retrieve_token(_, index) when index >= length(@access_token_methods)  do
     nil
   end
 

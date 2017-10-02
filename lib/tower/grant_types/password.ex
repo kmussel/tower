@@ -3,11 +3,10 @@ defmodule Tower.GrantType.Password do
   Password grant type for OAuth2 Authorization Server
   """
   alias Comeonin.Bcrypt
+  alias Tower.Helpers.AccessToken, as: AccessTokenHelper
 
   @repo Application.get_env(:tower, :repo)
   @resource_owner Application.get_env(:tower, :resource_owner)
-  @generator Application.get_env(:tower, :generator)
-
   
   def authorize(%{"email" => email, "password" => password, "client_id" => client_id, "scopes" => scopes}) do
     client = @repo.get_by(Tower.Models.OAuthApplication, uid: client_id)
@@ -63,31 +62,7 @@ defmodule Tower.GrantType.Password do
                       scopes: scopes
                     }
 
-    generate_token(token_params)
-    |> insert_access_token(resource_owner_id: owner.id, application_id: client.id, scopes: scopes, expires_in: token_params[:expires_in])
-  end
-
-  def insert_access_token(nil, _), do: {:error, "Token could not be created"}
-  def insert_access_token(token, resource_owner_id: resource_owner_id, application_id: application_id, scopes: scopes, expires_in: expires_in) do
-    params = %{
-      token: token,
-      resource_owner_id: resource_owner_id,
-      application_id: application_id,
-      details: %{scopes: scopes},
-      expires_in: expires_in
-    }
-    params = case Application.get_env(:tower, :use_refresh_token, false) do
-        false -> params
-        true ->  Map.put(params, :refresh_token, SecureRandom.hex(32))
-    end
-    changeset = Tower.Models.AccessToken.changeset(%Tower.Models.AccessToken{}, params)
-    @repo.insert(changeset)
-  end
-
-  def generate_token(params) do
-    case @generator do
-      nil -> SecureRandom.hex(32)
-      generator -> generator.generate(params)
-    end
+    AccessTokenHelper.generate_token(token_params)
+    |> AccessTokenHelper.insert_access_token(resource_owner_id: owner.id, application_id: client.id, scopes: scopes, expires_in: token_params[:expires_in])
   end
 end
