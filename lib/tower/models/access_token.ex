@@ -22,7 +22,7 @@ defmodule Tower.Models.AccessToken do
     field :revoked_at, :utc_datetime
     belongs_to :resource_owner, @resource_owner
     belongs_to :application, Tower.Models.OAuthApplication
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc """
@@ -39,4 +39,19 @@ defmodule Tower.Models.AccessToken do
     |> unique_constraint(:access_tokens_token_constraint, name: :access_tokens_token_index)
     |> change(params)
   end
+
+
+  def is_expired?(token) do
+    (DateTime.to_unix(token.inserted_at) + token.expires_in) < :os.system_time(:seconds)
+  end
+
+  def has_scopes(_, []), do: true
+  def has_scopes(token, required_scopes) when is_list(required_scopes) do
+    details = token.details || %{}
+    scopes = String.split(Map.get(details, "scopes", ""), ~r{,\s*})
+    required_scopes
+    |> Enum.find(fn(item) -> !Enum.member?(scopes, item); end)
+    |> is_nil
+  end
+  def has_scopes(_, _), do: false
 end

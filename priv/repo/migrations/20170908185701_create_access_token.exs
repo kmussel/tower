@@ -6,8 +6,8 @@ defmodule Tower.Repo.Migrations.CreateAccessToken do
       add :id, :uuid, primary_key: true
       add :resource_owner_id, :uuid
       add :application_id, :uuid
-      add :token, :binary
-      add :refresh_token, :binary
+      add :token, :string
+      add :refresh_token, :string
       add :expires_in, :integer
       add :details, :jsonb
       add :revoked_at, :datetime
