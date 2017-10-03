@@ -1,9 +1,10 @@
 defmodule Tower.OAuth2 do
   @moduledoc """
-  Authorize resource
+  Authorize resource and return Token
   """
 
   @grant_types Application.get_env(:tower, :grant_types, %{})
+
   def authorize(params) do
     case strategy_check(params["grant_type"]) do 
       false -> {:error, "Strategy for '#{params["grant_type"]}' is not enabled!"}

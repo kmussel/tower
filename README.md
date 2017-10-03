@@ -1,5 +1,9 @@
 # Tower
 
+<p align="center" >
+<img src="https://github.com/metismachine/tower/blob/master/tower.png?raw=true" alt="Tower" title="Tower">
+</p>
+
 **TODO: Add description**
 
 ## Installation
@@ -83,7 +87,8 @@ config :tower,
   end,
   grant_types: %{
     password: Tower.GrantType.Password
-  }
+  },
+  access_token_methods: [:from_bearer_authorization, :from_params, {Module, :get_access_token})]
 ```  
 
 By default the resource owner is authenticated and retrieved using:
@@ -91,3 +96,15 @@ By default the resource owner is authenticated and retrieved using:
 where params is %{email: email, password: password}
 
 You can configure how the resource owner is retrieved by setting the resource_owner_from_credentials function within the config as shown above.  
+
+
+
+## Authenticating Access Token
+
+Call:  ``` Tower.Token.authenticate(conn, opts[:scopes])) ```
+It will retrieve the access token based on the config variable "access_token_methods".  The default is "from_bearer_authorization" which gets the token from HTTP Header field, Authorization.  
+You can configure it to get the access token from the "access_token" key in the query params or you can pass a tuple of Module and function to call.  The function needs to take the connection as an argument. 
+
+It then validates the token checking that it is not expired, revoked, and has the necessary scopes.
+
+
