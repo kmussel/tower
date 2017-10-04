@@ -60,6 +60,6 @@ defmodule Tower.Plug.Authenticate do
   end
 
   defp get_action(conn) do
-    conn.private.action_name
+    conn.private[:action_name]
   end
 end
