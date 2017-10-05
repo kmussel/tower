@@ -1,7 +1,6 @@
 defmodule Tower.Helpers.AccessToken do
 
   @repo Application.get_env(:tower, :repo)
-  @resource_owner Application.get_env(:tower, :resource_owner)
   @generator Application.get_env(:tower, :generator)
 
   alias Tower.Models.AccessToken
@@ -55,5 +54,4 @@ defmodule Tower.Helpers.AccessToken do
   def is_valid(token, scopes) do 
     !AccessToken.is_expired?(token) && is_nil(token.revoked_at) && AccessToken.has_scopes(token, scopes)
   end
-
 end
