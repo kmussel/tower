@@ -108,3 +108,46 @@ You can configure it to get the access token from the "access_token" key in the 
 It then validates the token checking that it is not expired, revoked, and has the necessary scopes.
 
 
+## Plugs
+
+### Authenticate
+
+You can allow only authenticated requestors to access the resource using the plug: ``` Tower.Plug.Authenticate. ```
+You can also pass in the required scopes necessary to access the resource and which actions to authenticate. 
+The actions are limited by passing in either: `only` or `except` but not both.  The options can be a string or a list.
+For this to work the connection must have a variable assigned for the action name.  `conn.private[:action_name]`.  
+
+When authenticated, the access token is assigned to the connection assigns property as tower_token:  `conn.assigns.tower_token`
+
+If you're using Plug.Router you could do something like this:
+
+``` 
+defmodule AppModule.Routers.User do
+
+  plug :match
+  plug Tower.Plug.Authenticate, scopes: ~w(read write), only: [:show]
+  plug :dispatch
+
+  get "/me", private: %{action_name: :show} do
+    conn.assigns.tower_token
+    |> show_user_response()
+  end
+  
+  get "/all" do
+    conn
+    |> show_response()
+  end
+end
+
+```
+
+The route to "/me" will be authenticated and inside the function you will have access to the access token.  
+The route to "/all"  wont be so anyone will be able to access it.  
+
+
+### Unauthorized Only
+
+Allow only access to a resource if the requestor isn't authenticated.
+
+```plug Tower.Plug.UnauthorizedOnly```
+
