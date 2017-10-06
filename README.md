@@ -82,9 +82,7 @@ config :tower,
   ecto_repos: [Tower.Repo],
   repo: Tower.Repo,
   resource_owner: Application.Model.User,
-  resource_owner_from_credentials: fn(params) ->    
-    Tower.GrantType.Password.resource_owner_from_email_password(params)    
-  end,
+  resource_owner_from_credentials: App.CustomUser,
   grant_types: %{
     password: Tower.GrantType.Password
   },
@@ -95,7 +93,7 @@ By default the resource owner is authenticated and retrieved using:
 ``` Tower.GrantType.Password.resource_owner_from_email_password(params)  ```
 where params is %{email: email, password: password}
 
-You can configure how the resource owner is retrieved by setting the resource_owner_from_credentials function within the config as shown above.  
+You can configure how the resource owner is retrieved by setting the resource_owner_from_credentials to your own module within the config as shown above.  The module needs to define the "resource_owner_from_credentials" function which takes 2 arguments: the connection and the client.  
 
 
 

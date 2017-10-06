@@ -1,11 +1,10 @@
 defmodule Tower.GrantType.RefreshToken do
 
   @repo Application.get_env(:tower, :repo)
-  @resource_owner Application.get_env(:tower, :resource_owner)
 
   alias Tower.Helpers.AccessToken, as: AccessTokenHelper
 
-  def authorize(%{"refresh_token" => refresh_token, "client_id" => client_id, "client_secret" => client_secret}) do
+  def authorize(_conn, %{"refresh_token" => refresh_token, "client_id" => client_id, "client_secret" => client_secret}) do
     client = @repo.get_by(Tower.Models.OAuthApplication, uid: client_id, secret: client_secret)
     token = @repo.get_by(Tower.Models.AccessToken, refresh_token: refresh_token)
     
@@ -15,7 +14,7 @@ defmodule Tower.GrantType.RefreshToken do
     |> revoke_refresh_token(token)
   end
 
-  def authorize(params) do
+  def authorize(_conn, params) do
     reason = cond do
       params["client_id"] == nil -> "No client supplied"
       params["client_secret"] == nil -> "No client supplied"

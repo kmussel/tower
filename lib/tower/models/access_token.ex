@@ -4,12 +4,10 @@ defmodule Tower.Models.AccessToken do
 
   @required_fields [
     :token,
-    :resource_owner_id,
-    :application_id
+    :resource_owner_id
   ]
 
   @resource_owner Application.get_env(:tower, :resource_owner)
-  @expires_in Application.get_env(:tower, :expires_in, 7200)
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -35,7 +33,7 @@ defmodule Tower.Models.AccessToken do
     |> cast(params, @required_fields)
     |> validate_required(@required_fields)
     |> foreign_key_constraint(:resource_owner_id)    
-    |> foreign_key_constraint(:application_id)    
+    |> foreign_key_constraint(:application_id)
     |> unique_constraint(:access_tokens_token_constraint, name: :access_tokens_token_index)
     |> change(params)
   end
