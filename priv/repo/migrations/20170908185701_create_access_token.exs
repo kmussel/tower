@@ -10,9 +10,9 @@ defmodule Tower.Repo.Migrations.CreateAccessToken do
       add :refresh_token, :string
       add :expires_in, :integer
       add :details, :jsonb
-      add :revoked_at, :datetime
+      add :revoked_at, :utc_datetime
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
     create index(:access_tokens, [:resource_owner_id])
     create unique_index(:access_tokens, [:token])

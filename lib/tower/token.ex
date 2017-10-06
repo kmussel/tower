@@ -29,7 +29,7 @@ defmodule Tower.Token do
   def revoke_token({:ok, token}) do
     case is_nil(token.revoked_at) do
       false -> {:ok, token}
-      true -> Tower.Models.AccessToken.revoke(token)
+      true -> AccessToken.revoke(token)
     end
   end
   def revoke_token({:error, _} = res), do: res
@@ -42,17 +42,17 @@ defmodule Tower.Token do
   end
 
   defp fetch_token_by(conn, "refresh_token") do
-    @repo.get_by(Tower.Models.AccessToken, refresh_token: conn.params["token"])
+    @repo.get_by(AccessToken, refresh_token: conn.params["token"])
   end
   defp fetch_token_by(conn, _) do
-    @repo.get_by(Tower.Models.AccessToken, token: conn.params["token"])
+    @repo.get_by(AccessToken, token: conn.params["token"])
   end
 
   defp retrieve_token(conn, index \\ 0)
   defp retrieve_token(conn, index) when index < length(@access_token_methods)  do
     case token_from_method(conn, index) do
       nil -> retrieve_token(conn, index+1)
-      token -> @repo.get_by(Tower.Models.AccessToken, token: token) |> @repo.preload(:resource_owner)
+      token -> @repo.get_by(AccessToken, token: token) |> @repo.preload(:resource_owner)
     end
   end
   defp retrieve_token(_, index) when index >= length(@access_token_methods)  do

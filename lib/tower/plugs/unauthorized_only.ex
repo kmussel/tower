@@ -29,9 +29,9 @@ defmodule Tower.Plug.UnauthorizedOnly do
 
   defp response_conn_with(conn, {:ok, _}) do
     conn
-    |> Plug.Conn.put_resp_content_type("application/json")
-    |> Plug.Conn.send_resp(:forbidden, Poison.encode_to_iodata!(%{error: "Only unauhorized access allowed!"}))
-    |> Plug.Conn.halt()
+    |> put_resp_content_type("application/json")
+    |> send_resp(:forbidden, Poison.encode_to_iodata!(%{error: "Only unauhorized access allowed!"}))
+    |> halt()
   end
   defp response_conn_with(conn, _), do: conn
 end

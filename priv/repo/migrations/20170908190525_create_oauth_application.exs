@@ -11,7 +11,7 @@ defmodule Tower.Repo.Migrations.CreateOauthApplication do
       add :settings, :jsonb
       add :scopes, :string
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end  
     create unique_index(:oauth_applications, [:uid])
   end
