@@ -42,7 +42,7 @@ defmodule Tower.Helpers.AccessToken do
   end
 
   def validate_token(token, scopes \\ [])
-  def validate_token(nil, _), do: {:error, "Access Token is invalid"}
+  def validate_token(nil, _), do: nil
   def validate_token(token, scopes) do
     case is_valid(token, scopes) do 
       false -> {:error, "Access Token is invalid"}
