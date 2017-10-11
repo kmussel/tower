@@ -21,8 +21,16 @@ defmodule Tower.Plug.Authenticate do
   defp response_conn_with(conn, {:ok, token}), do: assign(conn, :tower_token, token)
   defp response_conn_with(conn, {:error, reason}) do
     conn
+    |> put_resp_header("www-authenticate", "Bearer realm=\"tower\"")
     |> put_resp_content_type("application/json")
     |> send_resp(:forbidden, Poison.encode_to_iodata!(%{error: reason}))
+    |> halt()
+  end
+  defp response_conn_with(conn, nil) do
+    conn
+    |> put_resp_header("www-authenticate", "Bearer realm=\"tower\"")
+    |> put_resp_content_type("application/json")
+    |> send_resp(:unauthorized, Poison.encode_to_iodata!(%{error: "Invalid Authorization"}))
     |> halt()
   end
 
