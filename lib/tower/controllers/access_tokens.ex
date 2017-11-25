@@ -6,7 +6,7 @@ defmodule Tower.Controllers.AccessTokens do
   plug :dispatch
 
   post "/" do
-    conn.params
+    conn
     |> Tower.OAuth2.authorize()
     |> handle_authorization(conn)
   end
@@ -41,6 +41,7 @@ defmodule Tower.Controllers.AccessTokens do
     case res do
       {:ok, token} ->
         data = Map.take(token, [:id, :token, :expires_in, :inserted_at, :refresh_token])
+        data = Map.merge(data, %{"token_type" => "bearer"})
         conn
         |> Plug.Conn.put_resp_content_type("application/json")
         |> Plug.Conn.send_resp(:ok, Poison.encode_to_iodata!(data))

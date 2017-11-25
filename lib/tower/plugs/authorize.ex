@@ -1,6 +1,7 @@
-defmodule Tower.Plug.Authenticate do
+defmodule Tower.Plug.Authorize do
   @moduledoc """
-  Tower plug implementation to get authenticated resource
+  Tower plug implementation to check authentications and
+  to set access token -- conn.assigns.tower_token.
   """  
   import Plug.Conn
   import Keyword, only: [has_key?: 2]
@@ -11,23 +12,26 @@ defmodule Tower.Plug.Authenticate do
 
   def call(conn, opts) do
     if action_valid?(conn, opts) do
-      authenticate_resource_owner(conn)
+      response_conn_with(conn, Token.authenticate(conn, opts[:scopes]))
     else
       conn
     end
   end
 
-  defp authenticate_resource_owner(conn) do
-    case Application.get_env(:tower, :resource_owner_authenticator) do
-      nil -> conn
-      ro ->
-        apply(ro, :resource_owner_authenticator, [conn])
-        |> set_resource_owner(conn)
-    end
+  defp response_conn_with(conn, {:ok, token}), do: assign(conn, :tower_token, token)
+  defp response_conn_with(conn, {:error, reason}) do
+    conn
+    |> put_resp_header("www-authenticate", "Bearer realm=\"tower\"")
+    |> put_resp_content_type("application/json")
+    |> send_resp(:forbidden, Poison.encode_to_iodata!(%{error: reason}))
+    |> halt()
   end
-
-  defp set_resource_owner(resource_owner, conn) do
-    assign(conn, :current_resource_owner, resource_owner)
+  defp response_conn_with(conn, nil) do
+    conn
+    |> put_resp_header("www-authenticate", "Bearer realm=\"tower\"")
+    |> put_resp_content_type("application/json")
+    |> send_resp(:unauthorized, Poison.encode_to_iodata!(%{error: "Invalid Authorization"}))
+    |> halt()
   end
 
   defp action_valid?(conn, opts) do

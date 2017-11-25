@@ -9,7 +9,7 @@ defmodule Tower.OAuth2 do
     authorize(conn, conn.params)
   end
   def authorize(conn, params) do
-    case strategy_check(params["grant_type"]) do 
+    case strategy_check(params["grant_type"]) do
       {:error, msg} ->  {:error, msg}
       false -> {:error, "Strategy for '#{params["grant_type"]}' is not enabled!"}
       true  -> @grant_types[String.to_atom(params["grant_type"])].authorize(conn, params)
@@ -17,7 +17,7 @@ defmodule Tower.OAuth2 do
   end
 
   defp strategy_check(nil), do: {:error, "Missing grant_type parameter"}
-  defp strategy_check(grant_type) do    
+  defp strategy_check(grant_type) do
     Map.has_key?(@grant_types, String.to_atom(grant_type))
   end    
 end
