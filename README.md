@@ -83,8 +83,10 @@ config :tower,
   repo: Tower.Repo,
   resource_owner: Application.Model.User,
   resource_owner_from_credentials: App.CustomUser,
+  resource_owner_authenticator: App.Authenticator, 
   grant_types: %{
-    password: Tower.GrantType.Password
+    password: Tower.GrantType.Password,
+    authorization_code: Tower.GrantType.AuthorizationCode
   },
   access_token_methods: [:from_bearer_authorization, :from_params, {Module, :get_access_token})]
 ```  
@@ -108,9 +110,9 @@ It then validates the token checking that it is not expired, revoked, and has th
 
 ## Plugs
 
-### Authenticate
+### Authorize
 
-You can allow only authenticated requestors to access the resource using the plug: ``` Tower.Plug.Authenticate. ```
+You can allow only authenticated requestors to access the resource using the plug: ``` Tower.Plug.Authorize. ```
 You can also pass in the required scopes necessary to access the resource and which actions to authenticate. 
 The actions are limited by passing in either: `only` or `except` but not both.  The options can be a string or a list.
 For this to work the connection must have a variable assigned for the action name.  `conn.private[:action_name]`.  
@@ -123,7 +125,7 @@ If you're using Plug.Router you could do something like this:
 defmodule AppModule.Routers.User do
 
   plug :match
-  plug Tower.Plug.Authenticate, scopes: ~w(read write), only: [:show]
+  plug Tower.Plug.Authorize, scopes: ~w(read write), only: [:show]
   plug :dispatch
 
   get "/me", private: %{action_name: :show} do
