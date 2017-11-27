@@ -5,14 +5,13 @@ defmodule Tower.GrantType.Password do
   alias Comeonin.Bcrypt
   alias Tower.Helpers.AccessToken, as: AccessTokenHelper
 
-  @repo Application.get_env(:tower, :repo)
-  @resource_owner Application.get_env(:tower, :resource_owner)
+  import Tower.Config, only: [repo: 0, resource_owner: 0]
 
   def authorize(conn, %{"email" => _, "password" => _, "scopes" => scopes} = params) do
     client =
       case is_nil(params["client_id"]) do
         true -> nil
-        false -> @repo.get_by(Tower.Models.OAuthApplication, uid: params["client_id"])
+        false -> repo().get_by(Tower.Models.OAuthApplication, uid: params["client_id"])
       end
     owner = resource_owner_from_credentials(conn, client)
     create_access_token(client, owner, scopes)
@@ -50,7 +49,7 @@ defmodule Tower.GrantType.Password do
   end
 
   def resource_owner_from_email_password(%{"email" => email, "password" => password}) do
-    @repo.get_by(@resource_owner, email: email)
+    repo().get_by(resource_owner(), email: email)
     |> match_with_user_password(password)
   end
   def resource_owner_from_email_password(_), do: {:error, "Invalid Params"}
