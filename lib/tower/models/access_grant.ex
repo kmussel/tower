@@ -8,7 +8,8 @@ defmodule Tower.Models.AccessGrant do
     :application_id
   ]
 
-  @resource_owner Application.get_env(:tower, :resource_owner)
+  import Tower.Config, only: [resource_owner: 0]
+
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -19,7 +20,7 @@ defmodule Tower.Models.AccessGrant do
     field :expires_in, :integer
     field :details, :map
     field :revoked_at, :utc_datetime
-    belongs_to :resource_owner, @resource_owner
+    belongs_to :resource_owner, resource_owner()
     belongs_to :application, Tower.Models.OAuthApplication
     timestamps(type: :utc_datetime)
   end

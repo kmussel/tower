@@ -1,7 +1,7 @@
 defmodule Tower.Helpers.AccessToken do
 
-  @repo Application.get_env(:tower, :repo)
-  @generator Application.get_env(:tower, :generator)
+  import Tower.Config, only: [repo: 0, generator: 0]
+  
 
   alias Tower.Models.AccessToken
 
@@ -19,11 +19,11 @@ defmodule Tower.Helpers.AccessToken do
         true ->  Map.put(params, :refresh_token, SecureRandom.hex(32))
     end
     changeset = Tower.Models.AccessToken.changeset(%Tower.Models.AccessToken{}, params)
-    @repo.insert(changeset)
+    repo().insert(changeset)
   end
 
   def generate_token(params) do
-    case @generator do
+    case generator() do
       nil -> SecureRandom.hex(32)
       generator -> generator.generate(params)
     end

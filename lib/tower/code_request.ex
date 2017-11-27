@@ -1,14 +1,12 @@
 defmodule Tower.CodeRequest do
 
-  require IEx;
-  @repo Application.get_env(:tower, :repo)
-
+  import Tower.Config, only: [repo: 0]
 
   alias Tower.Models.AccessGrant
 
   def authorize(nil, _), do: {:error, "Invalid Resource Owner"}
   def authorize(conn, resource_owner) do
-    client = @repo.get_by(Tower.Models.OAuthApplication, uid: conn.params["client_id"])
+    client = get_client(conn.params["client_id"])
     with {:ok, true} <- is_valid(conn, client, conn.params), 
          {:ok, grant} <- issue_access_grant(client, resource_owner, conn.params) do
           query = build_query(conn, {:ok, grant})
@@ -35,19 +33,23 @@ defmodule Tower.CodeRequest do
     }
     
     changeset = AccessGrant.changeset(%AccessGrant{}, params)
-    @repo.insert(changeset)
+    repo().insert(changeset)
   end
 
-  def is_valid(conn, nil, _), do: {:error, "Invalid Client ID"}
-  def is_valid(conn, client, %{"response_type" => response_type, "client_id" => client_id, "redirect_uri" => redirect_uri}) do
+  def is_valid(_conn, nil, _), do: {:error, "Invalid Client ID"}
+  def is_valid(_conn, client, %{"response_type" => _, "client_id" => _, "redirect_uri" => redirect_uri}) do
     if client.redirect_uri == redirect_uri do
       {:ok, true}
     else 
       {:error, "Invalid Redirect URI"}
     end
   end
-  def is_valid(conn, %{"response_type" => _, "client_id" => _}), do: {:error, "Missing redirect_uri"}
+  def is_valid(_conn, %{"response_type" => _, "client_id" => _}), do: {:error, "Missing redirect_uri"}
 
+  defp get_client(nil), do: nil
+  defp get_client(uid) do
+    repo().get_by(Tower.Models.OAuthApplication, uid: uid)
+  end
   defp build_query(conn, {:ok, grant}) do
     case conn.params["state"] do
       nil ->  
@@ -56,6 +58,12 @@ defmodule Tower.CodeRequest do
         %{code: grant.token, state: state}
     end
     
+  end
+  defp oauth_callback(conn, nil, query) do
+    conn
+    |> Plug.Conn.put_resp_content_type("application/json")
+    |> Plug.Conn.send_resp(400, Poison.encode_to_iodata!(query))
+    |> Plug.Conn.halt()
   end
   defp oauth_callback(conn, client, query) do
     querystr = URI.encode_query(query)

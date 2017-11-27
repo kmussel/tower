@@ -1,6 +1,8 @@
 defmodule Tower.Routes do
+
   defmacro __using__(params) do
     quote location: :keep do
+      require Plug.Router
       require Tower.Utils.Router
       import Plug.Conn
 

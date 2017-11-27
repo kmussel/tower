@@ -1,13 +1,12 @@
 defmodule Tower.GrantType.AuthorizationCode do
 
-  require IEx;
-  @repo Application.get_env(:tower, :repo)
+  import Tower.Config, only: [repo: 0]
 
   alias Tower.Helpers.AccessToken, as: AccessTokenHelper
 
   def authorize(_conn, %{"code" => auth_code, "client_id" => client_id, "client_secret" => client_secret}) do
-    client = @repo.get_by(Tower.Models.OAuthApplication, uid: client_id, secret: client_secret)
-    grant = @repo.get_by(Tower.Models.AccessGrant, token: auth_code)
+    client = repo().get_by(Tower.Models.OAuthApplication, uid: client_id, secret: client_secret)
+    grant = repo().get_by(Tower.Models.AccessGrant, token: auth_code)
 
     validate_grant_code(grant)
     |> AccessTokenHelper.validate_client(client)

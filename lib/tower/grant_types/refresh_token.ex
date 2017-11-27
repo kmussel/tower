@@ -1,12 +1,12 @@
 defmodule Tower.GrantType.RefreshToken do
 
-  @repo Application.get_env(:tower, :repo)
+  import Tower.Config, only: [repo: 0]
 
   alias Tower.Helpers.AccessToken, as: AccessTokenHelper
 
   def authorize(_conn, %{"refresh_token" => refresh_token, "client_id" => client_id, "client_secret" => client_secret}) do
-    client = @repo.get_by(Tower.Models.OAuthApplication, uid: client_id, secret: client_secret)
-    token = @repo.get_by(Tower.Models.AccessToken, refresh_token: refresh_token)
+    client = repo().get_by(Tower.Models.OAuthApplication, uid: client_id, secret: client_secret)
+    token = repo().get_by(Tower.Models.AccessToken, refresh_token: refresh_token)
     
     validate_refresh_token(token)
     |> AccessTokenHelper.validate_client(client)

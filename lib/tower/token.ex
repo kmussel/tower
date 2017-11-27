@@ -4,8 +4,9 @@ defmodule Tower.Token do
   alias Tower.Models.AccessToken
   alias Tower.Helpers.AccessToken, as: AccessTokenHelper
 
-  @repo Application.get_env(:tower, :repo)
-  @access_token_methods Application.get_env(:tower, :access_token_methods, [:from_bearer_authorization])
+  import Tower.Config, only: [repo: 0]
+  
+  import Tower.Utils.Guards #, only: [access_token_methods: 0]
 
   def authenticate(conn, nil), do: authenticate(conn, [])
   def authenticate(conn, scopes) do
@@ -16,7 +17,7 @@ defmodule Tower.Token do
 
   def revoke(nil, _), do: {:error, "Invalid Token"}
   def revoke(token, client_uid) do
-    client = @repo.get_by(Tower.Models.OAuthApplication, uid: client_uid)
+    client = repo().get_by(Tower.Models.OAuthApplication, uid: client_uid)
     {:ok, token}
     |> AccessTokenHelper.validate_client(client)
     |> revoke_token()
@@ -42,25 +43,25 @@ defmodule Tower.Token do
   end
 
   defp fetch_token_by(conn, "refresh_token") do
-    @repo.get_by(AccessToken, refresh_token: conn.params["token"])
+    repo().get_by(AccessToken, refresh_token: conn.params["token"])
   end
   defp fetch_token_by(conn, _) do
-    @repo.get_by(AccessToken, token: conn.params["token"])
+    repo().get_by(AccessToken, token: conn.params["token"])
   end
 
   defp retrieve_token(conn, index \\ 0)
-  defp retrieve_token(conn, index) when index < length(@access_token_methods)  do
+  defp retrieve_token(conn, index) when index < length(access_token_methods())  do
     case token_from_method(conn, index) do
       nil -> retrieve_token(conn, index+1)
-      token -> @repo.get_by(AccessToken, token: token) |> @repo.preload(:resource_owner)
+      token -> repo().get_by(AccessToken, token: token) |> repo().preload(:resource_owner)
     end
   end
-  defp retrieve_token(_, index) when index >= length(@access_token_methods)  do
+  defp retrieve_token(_, index) when index >= length(access_token_methods())  do
     nil
   end
 
   defp token_from_method(conn, index) do
-    case Enum.at(@access_token_methods, index) do
+    case Enum.at(access_token_methods(), index) do
       nil -> nil
       {module, func} -> apply(module, func, [conn])
       method -> parse_access_token(conn, method)
