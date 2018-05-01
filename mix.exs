@@ -32,7 +32,7 @@ defmodule Tower.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:postgrex, "0.13.3"},
+      {:postgrex, "0.13.5"},
       {:ecto, "2.2.1"},
       {:cowboy, "1.1.2"},
       {:plug,   "1.4.3"},
