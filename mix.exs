@@ -34,8 +34,9 @@ defmodule Tower.Mixfile do
     [
       {:postgrex, "0.13.5"},
       {:ecto, "2.2.1"},
-      {:cowboy, "1.1.2"},
-      {:plug,   "1.4.3"},
+      {:cowboy, "~> 2.5"},
+      {:plug_cowboy, "~> 2.0"},
+      {:plug,   "~> 1.4"},
       {:poison, "3.1.0"},
       {:comeonin, "3.2.0"},
       {:secure_random, "0.5.1"}
