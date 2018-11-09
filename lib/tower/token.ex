@@ -72,7 +72,7 @@ defmodule Tower.Token do
     from_bearer_authorization(List.first(get_req_header(conn, "authorization")))    
   end
   defp parse_access_token(conn, method) when method == :from_params do 
-    conn.query_params["access_token"]
+    Map.get(conn.query_params, "access_token")
   end
   defp parse_access_token(_, _), do: nil
 
