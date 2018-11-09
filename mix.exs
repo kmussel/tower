@@ -4,7 +4,7 @@ defmodule Tower.Mixfile do
   def project do
     [
       app: :tower,
-      version: "0.3.4",
+      version: "0.3.5",
       elixir: "~> 1.5",
       package: package(),
       build_embedded: Mix.env == :prod,
