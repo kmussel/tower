@@ -1,7 +1,7 @@
 # Tower
 
 <p align="center" >
-<img src="https://github.com/metismachine/tower/blob/master/tower.png?raw=true" alt="Tower" title="Tower">
+<img src="https://github.com/kmussel/tower/blob/master/tower.png?raw=true" alt="Tower" title="Tower">
 </p>
 
 **TODO: Add description**

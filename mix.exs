@@ -47,7 +47,7 @@ defmodule Tower.Mixfile do
     [
       maintainers:  ["Kevin Musselman"],
       licenses:     ["MIT"],
-      links:        %{"Github" => "https://github.com/metismachine/tower"},
+      links:        %{"Github" => "https://github.com/kmussel/tower"},
       files:        ["lib", "mix.exs", "README.md"],
     ]
   end
